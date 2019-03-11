@@ -9,9 +9,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            if (args[0].equalsIgnoreCase("server")) {
+            if (args[0].toLowerCase().equals("server")) {
                 new Server(args);
-            } else if (args[0].equalsIgnoreCase("client")) {
+            } else if (args[0].toLowerCase().equals("client")) {
                 new Client(args);
             } else {
                 System.exit(-1);

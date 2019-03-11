@@ -24,10 +24,6 @@ public class Measurement implements Serializable {
         this.type = type;
     }
 
-    public Document convert(){
-        return null;
-    }
-
     public int getId() {
         return id;
     }
@@ -40,7 +36,7 @@ public class Measurement implements Serializable {
         return value;
     }
 
-    public String getType() {
+    private String getType() {
         return type;
     }
 }

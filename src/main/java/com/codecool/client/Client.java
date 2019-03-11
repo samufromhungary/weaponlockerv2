@@ -2,8 +2,6 @@ package com.codecool.client;
 
 import java.io.*;
 import java.net.Socket;
-import com.codecool.common.Measurement;
-import com.codecool.common.GenerateMeasurement;
 
 public class Client {
 

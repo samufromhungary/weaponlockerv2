@@ -10,6 +10,7 @@ public class Server {
         int portNumber = Integer.parseInt(args[1]);
         ServerSocket serverSocket = new ServerSocket(portNumber);
         Socket clientSocket = serverSocket.accept();
+        System.out.println("Git gud");
     }
 
 }

@@ -1,8 +1,8 @@
 # About
 
-Repo for the _IntelliJ + Maven Quickstart_ assignment.
+Repo for the GreenCommitment task.
 
-If you plan to use this repo as a "base" for one of your project change
-`<artifactId>intellij-maven-quickstart</artifactId>` to reflect what you're
-working on. E.g. `<artifactId>card-game-simulator-project</artifactId>` or
-similar.
+Package /w maven, run in terminal. (Port number range: 0000 - 9999)
+
+For server: java -cp target/intellij-maven-quickstart-1.0-SNAPSHOT.jar com.codecool.Main server 7007
+For client: java -cp target/intellij-maven-quickstart-1.0-SNAPSHOT.jar com.codecool.Main client localhost 7007
