@@ -36,7 +36,7 @@ public class Measurement implements Serializable {
         return value;
     }
 
-    private String getType() {
+    public String getType() {
         return type;
     }
 }

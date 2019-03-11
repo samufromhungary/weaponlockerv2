@@ -1,6 +1,8 @@
 package com.codecool;
 
 import com.codecool.client.Client;
+import com.codecool.common.Measurement;
+import com.codecool.common.XMLHandler;
 import com.codecool.server.Server;
 
 import java.io.IOException;
@@ -18,6 +20,10 @@ public class Main {
             }
         } catch (IOException e) {
             // TODO: Handle Exception
+        }
+        finally {
+            XMLHandler xml = new XMLHandler();
+            xml.handle(new Measurement(150, 50, "mm"));
         }
     }
 }
