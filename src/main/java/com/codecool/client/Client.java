@@ -44,18 +44,3 @@ public class Client {
         System.out.println("Measurements sent, exiting.");
     }
 }
-
-
-/*
-        Scanner sc = new Scanner(System.in);
-        System.out.println("What id do you want to use? Please, use integers only.");
-        int id = Integer.parseInt(sc.nextLine());
-        System.out.println("How many measurements do you want to send?");
-        int counter = Integer.parseInt(sc.nextLine());
-        ObjectOutputStream os = new ObjectOutputStream(clientSocket.getOutputStream());
-        for (int i = 0; i < max; i++) {
-            Measurement m = mg.generator(id);
-            os.writeObject(m.convertToDocument());
-            Thread.sleep(rand.nextInt(5000 - 1001) + 1000);
-        }
- */
