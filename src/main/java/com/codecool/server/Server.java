@@ -1,11 +1,11 @@
 package com.codecool.server;
 
-import com.codecool.common.Measurement;
-import com.codecool.common.XMLHandler;
 
+import com.codecool.common.XMLHandler;
+import org.w3c.dom.Document;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -18,20 +18,23 @@ public class Server {
     private void runServer(String arg) throws IOException {
         int portNumber = Integer.parseInt(arg);
         ServerSocket ss = new ServerSocket(portNumber);
-        System.out.println("Server online\n\n");
+        System.out.println("Server is stable. Waiting for measurements: ");
         while (true) {
             final Socket socket = ss.accept();
             new Thread(() -> {
                 try {
                     ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
-                    ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
-                    XMLHandler xml = new XMLHandler();
-                    Measurement m = (Measurement) is.readObject();
-                    xml.handle(m);
-                    os.writeObject(m);
-                    System.out.println("Server is closed");
-                    socket.close();
 
+                    Document measurementDoc = null;
+                    while (true) {
+                        try {
+                            XMLHandler xml = new XMLHandler();
+                            measurementDoc = (Document)is.readObject();
+                            xml.handle(measurementDoc);
+                        } catch (EOFException e) {
+                            break;
+                        }
+                    }
                 } catch (IOException | ClassNotFoundException e ) {
                     e.printStackTrace();
                 }

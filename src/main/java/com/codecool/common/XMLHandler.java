@@ -20,118 +20,87 @@ import javax.xml.transform.stream.StreamResult;
 public class XMLHandler {
 
     private Document doc;
-    private List<Measurement> measurements;
+    private List<Document> measurements;
 
-    public XMLHandler() throws NullPointerException{
-        DocumentBuilderFactory dFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = null;
-        try{
-            dBuilder = dFactory.newDocumentBuilder();
-        }catch (ParserConfigurationException e){
-            e.printStackTrace();
-        }
-        this.doc = dBuilder.newDocument();
+    public XMLHandler() {
+        DocumentBuilder docBuilder = createDocumentBuilder();
+        this.doc = docBuilder.newDocument();
         this.measurements = new ArrayList<>();
     }
 
-    public void handle(Measurement measurement){
-        if (getFiles(".").contains(measurement.getId() + ".xml")){
-            for (String name : getFiles(".")){
-                if(name.equals(measurement.getId() + ".xml")){
-                    load(measurement.getId() + ".xml");
+    public void handle(Document document) {
+        List<String> fileNames = getFiles(".");
+        String id = document.getDocumentElement().getAttribute("id") + ".xml";
+        if (fileNames.contains(id)) {
+            for (String fileName: fileNames) {
+                if (fileName.equals(id)) {
+                    load(id);
                     Element rootNode = doc.getDocumentElement();
-                    List<Element> nodes = getElements(rootNode);
-                    addMeasurement(nodes, rootNode);
+                    List<Element> measurementNodes = getElements(rootNode);
+                    addMeasurement(measurementNodes, rootNode);
                 }
             }
+
         }
-        measurements.add(measurement);
-        write(measurement);
+        measurements.add(document);
+        write(document);
     }
 
-    private void write(Measurement measurement){
-        DocumentBuilder dBuilder;
-        Element rootElement = null;
-
-        try{
-            DocumentBuilderFactory dFactory = DocumentBuilderFactory.newInstance();
-            dBuilder = dFactory.newDocumentBuilder();
-            doc = dBuilder.newDocument();
-            rootElement = doc.createElement("measurements");
-            doc.appendChild(rootElement);
-
-            doc.createAttribute("id");
-            rootElement.setAttribute("id", String.valueOf(measurement.getId()));
-        }catch (ParserConfigurationException e){
-            e.printStackTrace();
+    private void write(Document document) {
+        DocumentBuilder docBuilder = createDocumentBuilder();
+        doc = docBuilder.newDocument();
+        Element rootElement = doc.createElement("measurements");
+        doc.appendChild(rootElement);
+        rootElement.setAttribute("id", document.getDocumentElement().getAttribute("id"));
+        for (Document doc : measurements) {
+            writeNodes(doc, rootElement);
         }
-
-        for (Measurement tempMeasurement : measurements){
-            if(rootElement != null){
-                writeNodes(tempMeasurement, rootElement);
-            }
-        }
-
     }
 
-    private void load(String file){
-        try{
-            DocumentBuilderFactory dFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dFactory.newDocumentBuilder();
-            InputStream is = new FileInputStream(file);
-            this.doc = dBuilder.parse(is);
-            this.doc.getDocumentElement().normalize();
-        }catch (ParserConfigurationException | IOException |SAXException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    private void addMeasurement(List<Element> nodes, Element rootNode){
-        int id = Integer.valueOf(rootNode.getAttribute("id"));
-        for(Element node : nodes){
-            List<Element> ls = getElements(node);
-            long time = Long.valueOf(getString(ls, "time"));
-            int value = Integer.valueOf(getString(ls, "value"));
-            String type = getString(ls, "type").toUpperCase();
-            Measurement measurement = new Measurement(id, time, value, type);
-            measurements.add(measurement);
-        }
-
-
-    }
-
-    private void writeNodes(Measurement measurement, Element rootElement){
+    private void writeNodes(Document document, Element rootElement) {
         try {
             Element tempMeasurement = doc.createElement("measurement");
-
             rootElement.appendChild(tempMeasurement);
-
-            Element time = doc.createElement("time");
-            time.appendChild(doc.createTextNode(String.valueOf(measurement.getTime())));
-            tempMeasurement.appendChild(time);
-
-            Element value = doc.createElement("value");
-            value.appendChild(doc.createTextNode(String.valueOf(measurement.getValue())));
-            tempMeasurement.appendChild(value);
-
-            Element type = doc.createElement("type");
-            type.appendChild(doc.createTextNode(measurement.getType()));
-            tempMeasurement.appendChild(type);
-
+            createElement(doc, "time", document.getElementsByTagName("time").item(0).getTextContent(), tempMeasurement);
+            createElement(doc, "value", document.getElementsByTagName("value").item(0).getTextContent(), tempMeasurement);
+            createElement(doc, "type", document.getElementsByTagName("type").item(0).getTextContent(), tempMeasurement);
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(measurement.getId() + ".xml"));
-
+            StreamResult result = new StreamResult(new File(document.getDocumentElement().getAttribute("id") + ".xml"));
             transformer.transform(source, result);
 
         } catch (TransformerException tfe) {
             tfe.printStackTrace();
         }
+
     }
 
-    private String getString(List<Element> elements, String name){
+    private void load(String filename) {
+        try {
+            DocumentBuilder docBuilder = createDocumentBuilder();
+            InputStream is = new FileInputStream(filename);
+            this.doc = docBuilder.parse(is);
+            this.doc.getDocumentElement().normalize();
+        } catch (IOException | SAXException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addMeasurement(List<Element> measurementNodes, Element rootNode) {
+        int id = Integer.valueOf(rootNode.getAttribute("id"));
+        for (Element measurementNode : measurementNodes) {
+            List<Element> fieldNodes = getElements(measurementNode);
+            long time = Long.valueOf(getString(fieldNodes, "time"));
+            int value = Integer.valueOf(getString(fieldNodes, "value"));
+            String type = getString(fieldNodes, "type");
+
+            Measurement measurement = new Measurement(id, time, value, type);
+            measurements.add(measurement.convertToDocument());
+        }
+    }
+
+    private String getString(List<Element> elements, String name) {
         for (Element element : elements) {
             if (element.getTagName().equals(name)) {
                 return element.getTextContent();
@@ -140,7 +109,7 @@ public class XMLHandler {
         throw new IllegalStateException();
     }
 
-    private List<Element> getElements(Element parentNode){
+    private List<Element> getElements(Element parentNode) {
         ArrayList<Element> elements = new ArrayList<>();
         for (int i = 0; i < parentNode.getChildNodes().getLength(); i++) {
             Node childNode = parentNode.getChildNodes().item(i);
@@ -150,23 +119,35 @@ public class XMLHandler {
 
         }
         return elements;
-
     }
 
-    private List<String> getFiles(String path) throws NullPointerException{
+    private List<String> getFiles(String filePath) {
         List<String> fileNames = new ArrayList<>();
-        File folder = new File(path);
+        File folder = new File(filePath);
         File[] listOfFiles = folder.listFiles((dir, name) -> name.endsWith(".xml"));
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                System.out.println(file.getName());
                 fileNames.add(file.getName());
             }
         }
         return fileNames;
     }
 
+    public DocumentBuilder createDocumentBuilder() {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = null;
+        try {
+            db = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+        return db;
+    }
 
-
+    public void createElement(Document doc, String tagName, String textContent, Element root) {
+        Element element = doc.createElement(tagName);
+        element.setTextContent(textContent);
+        root.appendChild(element);
+    }
 }
