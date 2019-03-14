@@ -1,5 +1,6 @@
 package com.codecool.client;
 
+import com.codecool.common.ChartGenerator;
 import com.codecool.common.Measurement;
 import com.codecool.common.GenerateMeasurement;
 
@@ -19,7 +20,7 @@ public class Client {
         runClient(args);
     }
 
-    private String convertMillisIntoDate(long data){
+    public static String convertMillisIntoDate(long data){
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         Date result = new Date(data);
         return sdf.format(result);
@@ -42,5 +43,11 @@ public class Client {
             Thread.sleep(rand.nextInt(5000 - 1001) + 1000);
         }
         System.out.println("Measurements sent, exiting.");
+        try {
+            String toGenerate = String.valueOf(id);
+            ChartGenerator.generate(toGenerate);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
