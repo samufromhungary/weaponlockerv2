@@ -24,8 +24,8 @@ import java.util.List;
 
 public class ChartGenerator {
 
-    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-        String id = "10";
+    public static void generate(String id) throws ParserConfigurationException, IOException, SAXException {
+        //String id = "10";
         String path = id + ".xml";
         InputStream is = Main.class.getResourceAsStream("/"+path);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
